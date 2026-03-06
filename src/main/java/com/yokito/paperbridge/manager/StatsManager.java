@@ -67,7 +67,7 @@ public class StatsManager {
     private String formatDamage(int rawDamage) {
         double hearts = rawDamage / 10.0;
         if (hearts >= 1000) {
-            return String.format("%.1fk ❤", hearts / 1000.0);
+            return String.format("%.2fk ❤", hearts / 1000.0);
         }
         return String.format("%.1f ❤", hearts);
     }

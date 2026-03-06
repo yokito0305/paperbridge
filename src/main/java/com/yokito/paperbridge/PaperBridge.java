@@ -1,7 +1,6 @@
 package com.yokito.paperbridge;
 
 import com.yokito.paperbridge.commands.DiscordNickCommand;
-import com.yokito.paperbridge.commands.PlayerStatsCommand;
 import com.yokito.paperbridge.integrations.placeholderapi.PaperBridgeExpansion;
 import com.yokito.paperbridge.listeners.discordsrv.DeathMessageProcessor;
 import com.yokito.paperbridge.listeners.discordsrv.DiscordInteractionListener;
@@ -26,9 +25,6 @@ public class PaperBridge extends JavaPlugin {
         DiscordNickCommand nickCommand = new DiscordNickCommand(this);
         getCommand("setDiscordNick").setExecutor(nickCommand);
         getCommand("getDiscordNick").setExecutor(nickCommand);
-
-        PlayerStatsCommand statsCommand = new PlayerStatsCommand(this, statsManager);
-        getCommand("stats").setExecutor(statsCommand);
 
         // 註冊 PlaceholderAPI 擴展
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {

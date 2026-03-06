@@ -1,5 +1,5 @@
 name: PaperBridge
-version: '1.0-BETA'
+version: '1.1-BETA'
 main: com.yokito.paperbridge.PaperBridge
 api-version: '1.21.11'
 dependencies:
@@ -19,10 +19,6 @@ commands:
     description: 查看目前的 Discord 暱稱
     usage: /<command> [player]
     permission: paperbridge.getnick
-  stats:
-    description: 查看遊戲統計數據
-    usage: /<command> [player]
-    permission: paperbridge.stats
 permissions:
   paperbridge.getnick.self:
     description: 允許玩家查看自己的暱稱。
@@ -32,7 +28,4 @@ permissions:
     default: true
   paperbridge.setnick:
     description: 允許玩家設定自己的暱稱。
-    default: true
-  paperbridge.stats:
-    description: 允許玩家查看遊戲統計數據。
     default: true

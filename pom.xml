@@ -6,7 +6,7 @@
 
     <groupId>com.yokito</groupId>
     <artifactId>PaperBridge</artifactId>
-    <version>1.0-BETA</version>
+    <version>1.1-BETA</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

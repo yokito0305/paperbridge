@@ -25,7 +25,7 @@ public class PaperBridgeExpansion extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getVersion() {
-        return "1.0-BETA";
+        return "1.1-BETA";
     }
 
     // 確保 /papi reload 時不會清除這個變數
