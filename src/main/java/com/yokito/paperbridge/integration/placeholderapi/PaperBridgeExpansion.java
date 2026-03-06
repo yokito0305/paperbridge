@@ -1,16 +1,16 @@
-package com.yokito.paperbridge.integrations.placeholderapi;
+package com.yokito.paperbridge.integration.placeholderapi;
 
-import com.yokito.paperbridge.PaperBridge;
+import com.yokito.paperbridge.service.nickname.NicknameService;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
 public class PaperBridgeExpansion extends PlaceholderExpansion {
 
-    private final PaperBridge plugin;
+    private final NicknameService nicknameService;
 
-    public PaperBridgeExpansion(PaperBridge plugin) {
-        this.plugin = plugin;
+    public PaperBridgeExpansion(NicknameService nicknameService) {
+        this.nicknameService = nicknameService;
     }
 
     @Override
@@ -28,13 +28,11 @@ public class PaperBridgeExpansion extends PlaceholderExpansion {
         return "1.1-BETA";
     }
 
-    // 確保 /papi reload 時不會清除這個變數
     @Override
     public boolean persist() {
         return true;
     }
 
-    // 允許註冊
     @Override
     public boolean canRegister() {
         return true;
@@ -47,11 +45,9 @@ public class PaperBridgeExpansion extends PlaceholderExpansion {
         }
 
         if (params.equalsIgnoreCase("discord_nick")) {
-            // 若玩家未設定 Discord 暱稱，則回傳玩家的 Minecraft 名稱
-            String nick = plugin.getConfig().getString("nicks." + player.getUniqueId(), null);
-            return (nick != null) && (!nick.equals(player.getName())) ? nick + " | " + player.getName() : player.getName();
+            return nicknameService.getDisplayNickname(player.getUniqueId(), player.getName());
         }
 
-        return null; // 未知的變數回傳 null
+        return null;
     }
 }
