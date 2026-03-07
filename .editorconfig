@@ -1,0 +1,13 @@
+root = true
+
+[*.{java,yml,yaml,md,xml,properties}]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[pom.xml]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true

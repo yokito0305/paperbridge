@@ -85,7 +85,8 @@ public enum LeaderboardCategory {
 
     @Nonnull
     public String formatDisplayValue(StatsFormatter statsFormatter, long rawValue) {
-        return displayFormatter.apply(statsFormatter, rawValue);
+        String result = displayFormatter.apply(statsFormatter, rawValue);
+        return result != null ? result : "";
     }
 
     @Nonnull
