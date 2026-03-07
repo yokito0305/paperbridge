@@ -6,13 +6,24 @@ import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
+/**
+ * 將原始統計數值格式化為適合 UI 顯示的文字。
+ *
+ * <p>此類別只關注數值呈現，例如時間、傷害與距離的格式，不負責統計來源的取得。</p>
+ */
 public class StatsFormatter {
 
+    /**
+     * 將 Bukkit ticks 格式化成天/小時/分鐘字串。
+     */
     @Nonnull
     public String formatPlayTime(long ticks) {
         return TimeUtil.ticksToTimeString(ticks);
     }
 
+    /**
+     * 將原始傷害值轉成以顆心為單位的文字。
+     */
     @Nonnull
     public String formatDamage(long rawDamage) {
         double hearts = rawDamage / 10.0;
@@ -25,6 +36,9 @@ public class StatsFormatter {
         return formatted == null ? "" : formatted;
     }
 
+    /**
+     * 將原始公分距離轉成公尺或公里文字。
+     */
     @Nonnull
     public String formatDistance(long totalCm) {
         double meters = totalCm / 100.0;

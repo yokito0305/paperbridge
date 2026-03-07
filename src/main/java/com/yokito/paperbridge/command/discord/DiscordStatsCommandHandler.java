@@ -15,12 +15,21 @@ import javax.annotation.Nonnull;
 
 import org.bukkit.OfflinePlayer;
 
+/**
+ * Discord `/stats` slash command 的命令物件。
+ *
+ * <p>此命令會先把 Discord 使用者解析成綁定的 Minecraft 玩家，再交由統計服務與 embed factory
+ * 產生回覆。</p>
+ */
 public class DiscordStatsCommandHandler implements DiscordSlashCommand {
 
     private final DiscordLinkedPlayerResolver linkedPlayerResolver;
     private final PlayerStatsService playerStatsService;
     private final DiscordEmbedFactory embedFactory;
 
+    /**
+     * 建立統計指令處理器。
+     */
     public DiscordStatsCommandHandler(
             DiscordLinkedPlayerResolver linkedPlayerResolver,
             PlayerStatsService playerStatsService,
@@ -31,18 +40,29 @@ public class DiscordStatsCommandHandler implements DiscordSlashCommand {
         this.embedFactory = embedFactory;
     }
 
+    /**
+     * 回傳 slash command 的註冊名稱。
+     */
     @Override
     @Nonnull
     public String name() {
         return "stats";
     }
 
+    /**
+     * 建立 Discord 註冊用的 command definition。
+     *
+     * <p>`member` 是可選參數；若省略則查詢發送指令的使用者。</p>
+     */
     @Override
     public CommandData definition() {
         return new CommandData(name(), DiscordText.STATS_COMMAND_DESCRIPTION)
                 .addOption(OptionType.USER, "member", DiscordText.STATS_MEMBER_OPTION_DESCRIPTION, false);
     }
 
+    /**
+     * 處理 Discord slash command 互動事件並回傳玩家統計 embed。
+     */
     @Override
     public void handle(SlashCommandEvent event) {
         User targetUser = resolveTargetUser(event);
@@ -62,6 +82,11 @@ public class DiscordStatsCommandHandler implements DiscordSlashCommand {
                 .queue();
     }
 
+    /**
+     * 決定本次要查詢哪個 Discord 使用者。
+     *
+     * <p>若沒有指定 `member`，預設使用發送指令的本人。</p>
+     */
     private User resolveTargetUser(SlashCommandEvent event) {
         OptionMapping memberOption = event.getOption("member");
         if (memberOption == null) {

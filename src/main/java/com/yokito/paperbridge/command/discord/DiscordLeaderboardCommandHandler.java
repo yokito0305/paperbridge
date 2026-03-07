@@ -16,6 +16,11 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Discord `/leaderboard` slash command 的命令物件。
+ *
+ * <p>此類別同時提供指令 definition 與執行流程，讓註冊與 runtime dispatch 共用同一份命令描述。</p>
+ */
 public class DiscordLeaderboardCommandHandler implements DiscordSlashCommand {
 
     private static final int LEADERBOARD_LIMIT = 5;
@@ -24,6 +29,9 @@ public class DiscordLeaderboardCommandHandler implements DiscordSlashCommand {
     private final LeaderboardService leaderboardService;
     private final DiscordEmbedFactory embedFactory;
 
+    /**
+     * 建立排行榜指令處理器。
+     */
     public DiscordLeaderboardCommandHandler(
             DiscordLinkedPlayerResolver linkedPlayerResolver,
             LeaderboardService leaderboardService,
@@ -34,12 +42,18 @@ public class DiscordLeaderboardCommandHandler implements DiscordSlashCommand {
         this.embedFactory = embedFactory;
     }
 
+    /**
+     * 回傳 slash command 的註冊名稱。
+     */
     @Override
     @Nonnull
     public String name() {
         return "leaderboard";
     }
 
+    /**
+     * 建立 Discord 註冊用的 command definition，包含排行榜類別選項。
+     */
     @Override
     public CommandData definition() {
         OptionData categoryOption = new OptionData(
@@ -56,6 +70,11 @@ public class DiscordLeaderboardCommandHandler implements DiscordSlashCommand {
                 .addOptions(categoryOption);
     }
 
+    /**
+     * 處理 Discord slash command 互動事件。
+     *
+     * <p>流程包含參數驗證、類別解析、讀取已綁定玩家的排行榜資料，最後再用 embed 輸出。</p>
+     */
     @Override
     public void handle(SlashCommandEvent event) {
         OptionMapping categoryOption = event.getOption("category");

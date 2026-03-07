@@ -19,14 +19,29 @@ import com.yokito.paperbridge.service.stats.StatsFormatter;
 
 import java.util.List;
 
+/**
+ * 核心組裝器，負責建立 PaperBridge 執行所需的所有主要元件。
+ *
+ * <p>這裡是專案的 composition root：服務、Discord gateway、command registry、
+ * registrar 與 listener 都在這裡串接完成，再打包成 {@link PaperBridgeComponents} 回傳。</p>
+ */
 public class PaperBridgeBootstrap {
 
         private final PaperBridgePlugin plugin;
 
+        /**
+         * 建立綁定到特定 plugin 實例的組裝器。
+         */
         public PaperBridgeBootstrap(PaperBridgePlugin plugin) {
                 this.plugin = plugin;
         }
 
+        /**
+         * 依照依賴順序建立核心服務與 Discord 整合元件。
+         *
+         * <p>這裡只做組裝，不觸發任何註冊動作；實際註冊時機由 {@link PaperBridgePlugin}
+         * 在生命周期入口控制。</p>
+         */
         public PaperBridgeComponents build() {
                 StatsFormatter statsFormatter = new StatsFormatter();
                 NicknameService nicknameService = new NicknameService(

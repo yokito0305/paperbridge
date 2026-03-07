@@ -13,8 +13,19 @@ import org.bukkit.entity.Player;
 
 import java.time.Instant;
 
+/**
+ * 攔截 DiscordSRV 發出的死亡訊息，補上座標與時間資訊。
+ *
+ * <p>此類別以 DiscordSRV 的事件訂閱機制運作，屬於 DiscordSRV observer callback，
+ * 不直接參與 plugin 啟停流程判斷。</p>
+ */
 public class DeathMessageProcessor {
 
+    /**
+     * 在 DiscordSRV 完成死亡訊息後再補充額外欄位。
+     *
+     * <p>若原本訊息已有 embed，會更新 embed description；否則會直接附加文字內容。</p>
+     */
     @Subscribe
     public void onDeathMessagePostProcess(DeathMessagePostProcessEvent event) {
         Player player = event.getPlayer();
@@ -48,6 +59,9 @@ public class DeathMessageProcessor {
         event.setDiscordMessage(builder.build());
     }
 
+    /**
+     * 將 Bukkit world 環境轉成適合顯示在 Discord 的維度名稱。
+     */
     private String getDimensionName(World world) {
         if (world == null) {
             return "未知維度";

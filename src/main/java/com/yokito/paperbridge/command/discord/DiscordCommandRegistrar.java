@@ -10,6 +10,12 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * 將本專案管理的 slash commands 註冊到 Discord guild。
+ *
+ * <p>此類別只處理外部平台註冊，不負責命令查找；命令集合的來源由
+ * {@link DiscordSlashCommandRegistry} 提供。</p>
+ */
 public class DiscordCommandRegistrar {
 
     public static final long COMMAND_REGISTRATION_DELAY_TICKS = 40L;
@@ -17,11 +23,19 @@ public class DiscordCommandRegistrar {
     private final Logger logger;
     private final DiscordSlashCommandRegistry commandRegistry;
 
+    /**
+     * 建立 Discord command registrar。
+     */
     public DiscordCommandRegistrar(Logger logger, DiscordSlashCommandRegistry commandRegistry) {
         this.logger = logger;
         this.commandRegistry = commandRegistry;
     }
 
+    /**
+     * 重新發布目前由本專案管理的 slash commands。
+     *
+     * <p>流程會先清除同名舊全域指令，再逐個 guild upsert 最新 definition。</p>
+     */
     public void registerCommands(JDA jda) {
         deleteLegacyGlobalCommands(jda);
 
@@ -32,6 +46,9 @@ public class DiscordCommandRegistrar {
         }
     }
 
+    /**
+     * 刪除同名舊全域指令，避免與 guild 指令版本並存。
+     */
     private void deleteLegacyGlobalCommands(JDA jda) {
         Set<String> managedCommandNames = commandRegistry.commands().stream()
                 .map(DiscordSlashCommand::name)
@@ -45,6 +62,9 @@ public class DiscordCommandRegistrar {
         );
     }
 
+    /**
+     * 刪除單一舊版全域指令並記錄結果。
+     */
     private void deleteGlobalCommand(Command command) {
         command.delete().queue(
                 ignored -> logger.info(DiscordText.GLOBAL_COMMAND_DELETE_SUCCESS_LOG + command.getName()),
@@ -54,6 +74,9 @@ public class DiscordCommandRegistrar {
         );
     }
 
+    /**
+     * 在指定 guild 中註冊或更新單一 slash command。
+     */
     @SuppressWarnings("null")
     private void registerGuildCommand(Guild guild, CommandData commandData) {
         guild.upsertCommand(commandData).queue(

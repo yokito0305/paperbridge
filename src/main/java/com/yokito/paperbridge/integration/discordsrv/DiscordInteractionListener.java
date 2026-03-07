@@ -12,6 +12,12 @@ import github.scarsz.discordsrv.dependencies.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
 
+/**
+ * 連接 DiscordSRV readiness 事件與 JDA slash command 事件的橋接 listener。
+ *
+ * <p>此類別同時監聽 DiscordSRV 的 `DiscordReadyEvent` 與 JDA 的 slash command callback，
+ * 讓 command 註冊與命令路由都能集中在同一個整合邊界。</p>
+ */
 public class DiscordInteractionListener extends ListenerAdapter {
 
     private final PaperBridgePlugin plugin;
@@ -19,6 +25,9 @@ public class DiscordInteractionListener extends ListenerAdapter {
     private final DiscordCommandRegistrar commandRegistrar;
     private final DiscordSlashCommandRegistry commandRegistry;
 
+    /**
+     * 建立 Discord 互動 listener。
+     */
     public DiscordInteractionListener(
             PaperBridgePlugin plugin,
             DiscordGateway discordGateway,
@@ -31,6 +40,9 @@ public class DiscordInteractionListener extends ListenerAdapter {
         this.commandRegistry = commandRegistry;
     }
 
+    /**
+     * 在 DiscordSRV 宣告 Discord 已就緒後掛上 JDA listener，並延後註冊 slash commands。
+     */
     @Subscribe
     public void onDiscordReady(DiscordReadyEvent event) {
         JDA jda = discordGateway.getJda();
@@ -48,11 +60,17 @@ public class DiscordInteractionListener extends ListenerAdapter {
         );
     }
 
+    /**
+     * JDA slash command 入口，依命令名稱轉發到 registry 中對應的命令物件。
+     */
     @Override
     public void onSlashCommand(@Nonnull SlashCommandEvent event) {
         commandRegistry.find(event.getName()).ifPresent(command -> command.handle(event));
     }
 
+    /**
+     * 在 plugin 停用時將自己從 JDA 移除，避免重載後 listener 重複註冊。
+     */
     public void shutdown() {
         JDA jda = discordGateway.getJda();
         if (jda != null) {

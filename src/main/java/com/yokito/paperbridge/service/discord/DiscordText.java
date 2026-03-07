@@ -1,5 +1,10 @@
 package com.yokito.paperbridge.service.discord;
 
+/**
+ * 集中管理 Discord 指令、embed 與 log 相關固定文字。
+ *
+ * <p>此類別屬於呈現層資源庫，讓 command、listener 與 factory 不需要各自散落重複字串。</p>
+ */
 public final class DiscordText {
 
     public static final String STATS_COMMAND_DESCRIPTION = "查詢 Discord 綁定玩家的 Minecraft 統計資料";
@@ -41,6 +46,9 @@ public final class DiscordText {
     public static final String GUILD_COMMAND_REGISTER_SUCCESS_LOG = "已成功註冊 Guild Slash Command: /";
     public static final String GUILD_COMMAND_REGISTER_FAILURE_LOG = "註冊 Guild Slash Command 失敗 (Guild: ";
 
+    /**
+     * 工具類別不允許被實例化。
+     */
     private DiscordText() {
     }
 }
