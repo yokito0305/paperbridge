@@ -4,15 +4,20 @@ import com.yokito.paperbridge.model.stats.LeaderboardCategory;
 import com.yokito.paperbridge.model.stats.LeaderboardEntry;
 import com.yokito.paperbridge.service.discord.DiscordEmbedFactory;
 import com.yokito.paperbridge.service.discord.DiscordLinkedPlayerResolver;
+import com.yokito.paperbridge.service.discord.DiscordText;
 import com.yokito.paperbridge.service.stats.LeaderboardService;
 import github.scarsz.discordsrv.dependencies.jda.api.events.interaction.SlashCommandEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.interactions.commands.OptionMapping;
+import github.scarsz.discordsrv.dependencies.jda.api.interactions.commands.OptionType;
+import github.scarsz.discordsrv.dependencies.jda.api.interactions.commands.build.CommandData;
+import github.scarsz.discordsrv.dependencies.jda.api.interactions.commands.build.OptionData;
 
 import java.util.List;
 
-public class DiscordLeaderboardCommandHandler {
+import javax.annotation.Nonnull;
 
-    private static final String NO_LEADERBOARD_DATA_MESSAGE = "目前沒有可顯示的排行榜資料";
+public class DiscordLeaderboardCommandHandler implements DiscordSlashCommand {
+
     private static final int LEADERBOARD_LIMIT = 5;
 
     private final DiscordLinkedPlayerResolver linkedPlayerResolver;
@@ -29,10 +34,33 @@ public class DiscordLeaderboardCommandHandler {
         this.embedFactory = embedFactory;
     }
 
+    @Override
+    @Nonnull
+    public String name() {
+        return "leaderboard";
+    }
+
+    @Override
+    public CommandData definition() {
+        OptionData categoryOption = new OptionData(
+                OptionType.STRING,
+                "category",
+                DiscordText.LEADERBOARD_CATEGORY_OPTION_DESCRIPTION,
+                true
+        );
+        for (LeaderboardCategory category : LeaderboardCategory.values()) {
+            categoryOption.addChoice(category.displayName(), category.optionValue());
+        }
+
+        return new CommandData(name(), DiscordText.LEADERBOARD_COMMAND_DESCRIPTION)
+                .addOptions(categoryOption);
+    }
+
+    @Override
     public void handle(SlashCommandEvent event) {
         OptionMapping categoryOption = event.getOption("category");
         if (categoryOption == null) {
-            event.reply("❌ 缺少排行榜類別參數")
+            event.reply(DiscordText.CATEGORY_REQUIRED_MESSAGE)
                     .setEphemeral(true)
                     .queue();
             return;
@@ -42,7 +70,7 @@ public class DiscordLeaderboardCommandHandler {
         try {
             category = LeaderboardCategory.fromOption(categoryOption.getAsString());
         } catch (IllegalArgumentException exception) {
-            event.reply("❌ 不支援的排行榜類別")
+            event.reply(DiscordText.INVALID_CATEGORY_MESSAGE)
                     .setEphemeral(true)
                     .queue();
             return;
@@ -55,8 +83,7 @@ public class DiscordLeaderboardCommandHandler {
                     LEADERBOARD_LIMIT
             );
             if (leaderboard.isEmpty()) {
-                hook.editOriginal("❌ " + NO_LEADERBOARD_DATA_MESSAGE)
-                        .queue();
+                hook.editOriginal(DiscordText.NO_LEADERBOARD_DATA_MESSAGE).queue();
                 return;
             }
 

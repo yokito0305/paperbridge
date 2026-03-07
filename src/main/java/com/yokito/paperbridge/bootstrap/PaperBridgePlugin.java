@@ -1,68 +1,44 @@
 package com.yokito.paperbridge.bootstrap;
 
-import com.yokito.paperbridge.command.discord.DiscordCommandRegistrar;
-import com.yokito.paperbridge.command.discord.DiscordLeaderboardCommandHandler;
-import com.yokito.paperbridge.command.discord.DiscordOnlineCommandHandler;
-import com.yokito.paperbridge.command.discord.DiscordStatsCommandHandler;
 import com.yokito.paperbridge.command.minecraft.DiscordNickCommand;
 import com.yokito.paperbridge.integration.discordsrv.DeathMessageProcessor;
-import com.yokito.paperbridge.integration.discordsrv.DiscordInteractionListener;
 import com.yokito.paperbridge.integration.placeholderapi.PaperBridgeExpansion;
-import com.yokito.paperbridge.service.discord.DiscordEmbedFactory;
-import com.yokito.paperbridge.service.discord.DiscordLinkedPlayerResolver;
-import com.yokito.paperbridge.service.nickname.NicknameRepository;
+import com.yokito.paperbridge.service.discord.DiscordText;
 import com.yokito.paperbridge.service.nickname.NicknameService;
-import com.yokito.paperbridge.service.stats.LeaderboardService;
-import com.yokito.paperbridge.service.stats.PlayerStatsService;
-import com.yokito.paperbridge.service.stats.StatsFormatter;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PaperBridgePlugin extends JavaPlugin {
 
-    private DeathMessageProcessor deathMessageProcessor;
-    private DiscordInteractionListener discordInteractionListener;
+    private PaperBridgeComponents components;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        components = new PaperBridgeBootstrap(this).build();
 
-        NicknameService nicknameService = buildNicknameService();
-        PlayerStatsService playerStatsService = buildPlayerStatsService();
-        LeaderboardService leaderboardService = buildLeaderboardService();
-
-        registerMinecraftCommands(nicknameService);
-        registerPlaceholderExpansion(nicknameService);
-        registerDiscordIntegrations(playerStatsService, leaderboardService);
+        registerMinecraftCommands(components.nicknameService());
+        registerPlaceholderExpansion(components.nicknameService());
+        registerDiscordIntegrations(components.deathMessageProcessor());
     }
 
     @Override
     public void onDisable() {
-        if (deathMessageProcessor != null) {
-            github.scarsz.discordsrv.DiscordSRV.api.unsubscribe(deathMessageProcessor);
+        if (components == null) {
+            return;
         }
-        if (discordInteractionListener != null) {
-            discordInteractionListener.shutdown();
-            github.scarsz.discordsrv.DiscordSRV.api.unsubscribe(discordInteractionListener);
-        }
-    }
 
-    private NicknameService buildNicknameService() {
-        NicknameRepository nicknameRepository = new NicknameRepository(getConfig(), this::saveConfig);
-        return new NicknameService(nicknameRepository);
-    }
-
-    private PlayerStatsService buildPlayerStatsService() {
-        return new PlayerStatsService(new StatsFormatter());
-    }
-
-    private LeaderboardService buildLeaderboardService() {
-        return new LeaderboardService(new StatsFormatter());
+        DeathMessageProcessor deathMessageProcessor = components.deathMessageProcessor();
+        components.discordGateway().unsubscribe(deathMessageProcessor);
+        components.discordInteractionListener().shutdown();
+        components.discordGateway().unsubscribe(components.discordInteractionListener());
     }
 
     private void registerMinecraftCommands(NicknameService nicknameService) {
         DiscordNickCommand nickCommand = new DiscordNickCommand(nicknameService);
-        getCommand("setDiscordNick").setExecutor(nickCommand);
-        getCommand("getDiscordNick").setExecutor(nickCommand);
+        bindCommand("setDiscordNick", nickCommand);
+        bindCommand("getDiscordNick", nickCommand);
     }
 
     private void registerPlaceholderExpansion(NicknameService nicknameService) {
@@ -71,44 +47,28 @@ public class PaperBridgePlugin extends JavaPlugin {
         }
 
         new PaperBridgeExpansion(nicknameService).register();
-        getLogger().info("已成功掛載 PlaceholderAPI 擴展");
+        getLogger().info(DiscordText.PLACEHOLDER_ENABLED_LOG);
     }
 
-    private void registerDiscordIntegrations(
-            PlayerStatsService playerStatsService,
-            LeaderboardService leaderboardService
-    ) {
+    private void registerDiscordIntegrations(DeathMessageProcessor deathMessageProcessor) {
         if (getServer().getPluginManager().getPlugin("DiscordSRV") == null) {
             return;
         }
 
-        DiscordLinkedPlayerResolver linkedPlayerResolver = new DiscordLinkedPlayerResolver();
-        DiscordEmbedFactory embedFactory = new DiscordEmbedFactory();
-        DiscordCommandRegistrar commandRegistrar = new DiscordCommandRegistrar(this);
-        DiscordStatsCommandHandler statsCommandHandler = new DiscordStatsCommandHandler(
-                linkedPlayerResolver,
-                playerStatsService,
-                embedFactory
-        );
-        DiscordLeaderboardCommandHandler leaderboardCommandHandler = new DiscordLeaderboardCommandHandler(
-                linkedPlayerResolver,
-                leaderboardService,
-                embedFactory
-        );
-        DiscordOnlineCommandHandler onlineCommandHandler = new DiscordOnlineCommandHandler(embedFactory);
+        components.discordGateway().subscribe(deathMessageProcessor);
+        getLogger().info(DiscordText.DISCORD_DEATH_PROCESSOR_ENABLED_LOG);
 
-        deathMessageProcessor = new DeathMessageProcessor();
-        github.scarsz.discordsrv.DiscordSRV.api.subscribe(deathMessageProcessor);
-        getLogger().info("已成功掛載 DiscordSRV Death Message Processor");
+        components.discordGateway().subscribe(components.discordInteractionListener());
+        getLogger().info(DiscordText.DISCORD_INTERACTION_ENABLED_LOG);
+    }
 
-        discordInteractionListener = new DiscordInteractionListener(
-                this,
-                commandRegistrar,
-                statsCommandHandler,
-                leaderboardCommandHandler,
-                onlineCommandHandler
-        );
-        github.scarsz.discordsrv.DiscordSRV.api.subscribe(discordInteractionListener);
-        getLogger().info("已成功掛載 DiscordSRV Interaction Listener");
+    private void bindCommand(String commandName, CommandExecutor executor) {
+        PluginCommand command = getCommand(commandName);
+        if (command == null) {
+            getLogger().severe(PluginText.COMMAND_NOT_DECLARED_LOG + commandName);
+            throw new IllegalStateException(PluginText.COMMAND_NOT_DECLARED_LOG + commandName);
+        }
+
+        command.setExecutor(executor);
     }
 }

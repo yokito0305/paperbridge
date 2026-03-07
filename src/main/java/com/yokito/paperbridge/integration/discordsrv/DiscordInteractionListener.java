@@ -2,10 +2,8 @@ package com.yokito.paperbridge.integration.discordsrv;
 
 import com.yokito.paperbridge.bootstrap.PaperBridgePlugin;
 import com.yokito.paperbridge.command.discord.DiscordCommandRegistrar;
-import com.yokito.paperbridge.command.discord.DiscordLeaderboardCommandHandler;
-import com.yokito.paperbridge.command.discord.DiscordOnlineCommandHandler;
-import com.yokito.paperbridge.command.discord.DiscordStatsCommandHandler;
-import github.scarsz.discordsrv.DiscordSRV;
+import com.yokito.paperbridge.command.discord.DiscordSlashCommandRegistry;
+import com.yokito.paperbridge.service.discord.DiscordText;
 import github.scarsz.discordsrv.api.Subscribe;
 import github.scarsz.discordsrv.api.events.DiscordReadyEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.JDA;
@@ -17,34 +15,31 @@ import javax.annotation.Nonnull;
 public class DiscordInteractionListener extends ListenerAdapter {
 
     private final PaperBridgePlugin plugin;
+    private final DiscordGateway discordGateway;
     private final DiscordCommandRegistrar commandRegistrar;
-    private final DiscordStatsCommandHandler statsCommandHandler;
-    private final DiscordLeaderboardCommandHandler leaderboardCommandHandler;
-    private final DiscordOnlineCommandHandler onlineCommandHandler;
+    private final DiscordSlashCommandRegistry commandRegistry;
 
     public DiscordInteractionListener(
             PaperBridgePlugin plugin,
+            DiscordGateway discordGateway,
             DiscordCommandRegistrar commandRegistrar,
-            DiscordStatsCommandHandler statsCommandHandler,
-            DiscordLeaderboardCommandHandler leaderboardCommandHandler,
-            DiscordOnlineCommandHandler onlineCommandHandler
+            DiscordSlashCommandRegistry commandRegistry
     ) {
         this.plugin = plugin;
+        this.discordGateway = discordGateway;
         this.commandRegistrar = commandRegistrar;
-        this.statsCommandHandler = statsCommandHandler;
-        this.leaderboardCommandHandler = leaderboardCommandHandler;
-        this.onlineCommandHandler = onlineCommandHandler;
+        this.commandRegistry = commandRegistry;
     }
 
     @Subscribe
     public void onDiscordReady(DiscordReadyEvent event) {
-        JDA jda = DiscordSRV.getPlugin().getJda();
+        JDA jda = discordGateway.getJda();
         if (jda == null) {
             return;
         }
 
         jda.addEventListener(this);
-        plugin.getLogger().info("已註冊 Discord Interaction Listener");
+        plugin.getLogger().info(DiscordText.DISCORD_JDA_LISTENER_ATTACHED_LOG);
 
         plugin.getServer().getScheduler().runTaskLater(
                 plugin,
@@ -55,17 +50,11 @@ public class DiscordInteractionListener extends ListenerAdapter {
 
     @Override
     public void onSlashCommand(@Nonnull SlashCommandEvent event) {
-        switch (event.getName()) {
-            case "stats" -> statsCommandHandler.handle(event);
-            case "leaderboard" -> leaderboardCommandHandler.handle(event);
-            case "online" -> onlineCommandHandler.handle(event);
-            default -> {
-            }
-        }
+        commandRegistry.find(event.getName()).ifPresent(command -> command.handle(event));
     }
 
     public void shutdown() {
-        JDA jda = DiscordSRV.getPlugin().getJda();
+        JDA jda = discordGateway.getJda();
         if (jda != null) {
             jda.removeEventListener(this);
         }

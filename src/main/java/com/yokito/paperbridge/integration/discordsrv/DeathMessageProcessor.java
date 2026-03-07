@@ -1,5 +1,6 @@
 package com.yokito.paperbridge.integration.discordsrv;
 
+import com.yokito.paperbridge.service.discord.DiscordText;
 import github.scarsz.discordsrv.api.Subscribe;
 import github.scarsz.discordsrv.api.events.DeathMessagePostProcessEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.EmbedBuilder;
@@ -35,13 +36,13 @@ public class DeathMessageProcessor {
 
             String oldDescription = originalEmbed.getDescription() != null ? originalEmbed.getDescription() : "";
             String newDescription = oldDescription
-                    + "\n📍 死亡座標: " + coords
-                    + "\n🕐 死亡時間: " + discordTime;
+                    + "\n" + DiscordText.DEATH_LOCATION_LABEL + ": " + coords
+                    + "\n" + DiscordText.DEATH_TIME_LABEL + ": " + discordTime;
             embedBuilder.setDescription(newDescription.trim());
             builder.setEmbeds(embedBuilder.build());
         } else {
-            builder.append("\n📍 死亡座標: ").append(coords)
-                    .append("\n🕐 死亡時間: ").append(discordTime);
+            builder.append("\n").append(DiscordText.DEATH_LOCATION_LABEL).append(": ").append(coords)
+                    .append("\n").append(DiscordText.DEATH_TIME_LABEL).append(": ").append(discordTime);
         }
 
         event.setDiscordMessage(builder.build());
@@ -49,12 +50,12 @@ public class DeathMessageProcessor {
 
     private String getDimensionName(World world) {
         if (world == null) {
-            return "Unknown";
+            return "未知維度";
         }
         return switch (world.getEnvironment()) {
-            case NORMAL -> "Overworld";
-            case NETHER -> "Nether";
-            case THE_END -> "The End";
+            case NORMAL -> "主世界";
+            case NETHER -> "地獄";
+            case THE_END -> "終界";
             default -> world.getName();
         };
     }

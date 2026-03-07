@@ -15,34 +15,34 @@ public class DiscordEmbedFactory {
 
     public EmbedBuilder createStatsEmbed(String playerName, PlayerStatsView stats) {
         return new EmbedBuilder()
-                .setTitle("📊 " + playerName + " 的遊戲統計")
+                .setTitle(playerName + DiscordText.STATS_TITLE_SUFFIX)
                 .setColor(Color.decode("#55FF55"))
-                .addField("💀 死亡次數", stats.deaths(), true)
-                .addField("⚔ 玩家擊殺", stats.playerKills(), true)
-                .addField("🗡 怪物擊殺", stats.mobKills(), true)
-                .addField("🕐 遊戲時數", stats.playTime(), true)
-                .addField("❤ 承受傷害", stats.damageTaken(), true)
-                .addField("💥 造成傷害", stats.damageDealt(), true)
-                .addField("🚶 移動距離", stats.distanceTraveled(), true)
-                .setFooter("PaperBridge Stats", null)
+                .addField(DiscordText.DEATHS_FIELD, stats.deaths(), true)
+                .addField(DiscordText.PLAYER_KILLS_FIELD, stats.playerKills(), true)
+                .addField(DiscordText.MOB_KILLS_FIELD, stats.mobKills(), true)
+                .addField(DiscordText.PLAY_TIME_FIELD, stats.playTime(), true)
+                .addField(DiscordText.DAMAGE_TAKEN_FIELD, stats.damageTaken(), true)
+                .addField(DiscordText.DAMAGE_DEALT_FIELD, stats.damageDealt(), true)
+                .addField(DiscordText.DISTANCE_TRAVELED_FIELD, stats.distanceTraveled(), true)
+                .setFooter(DiscordText.STATS_FOOTER, null)
                 .setTimestamp(Instant.now());
     }
 
     public EmbedBuilder createLeaderboardEmbed(LeaderboardCategory category, List<LeaderboardEntry> leaderboard, int limit) {
         return new EmbedBuilder()
-                .setTitle("🏆 " + category.displayName() + " TOP " + limit)
+                .setTitle(category.displayName() + " TOP " + limit)
                 .setColor(Color.decode("#F1C40F"))
-                .setFooter("PaperBridge Leaderboard", null)
+                .setFooter(DiscordText.LEADERBOARD_FOOTER, null)
                 .setDescription(formatLeaderboardLines(category, leaderboard))
                 .setTimestamp(Instant.now());
     }
 
     public EmbedBuilder createOnlineEmbed(int onlineCount) {
         return new EmbedBuilder()
-                .setTitle("🟢 目前在線玩家")
+                .setTitle(DiscordText.ONLINE_TITLE)
                 .setColor(Color.decode("#2ECC71"))
-                .setDescription("目前共有 **" + onlineCount + "** 位玩家在線")
-                .setFooter("PaperBridge Online", null)
+                .setDescription(DiscordText.ONLINE_DESCRIPTION_PREFIX + onlineCount + DiscordText.ONLINE_DESCRIPTION_SUFFIX)
+                .setFooter(DiscordText.ONLINE_FOOTER, null)
                 .setTimestamp(Instant.now());
     }
 
@@ -62,10 +62,10 @@ public class DiscordEmbedFactory {
 
     private String getRankBadge(int rank) {
         return switch (rank) {
-            case 1 -> "🥇";
-            case 2 -> "🥈";
-            case 3 -> "🥉";
-            default -> "▫";
+            case 1 -> "#1";
+            case 2 -> "#2";
+            case 3 -> "#3";
+            default -> "#" + rank;
         };
     }
 }
