@@ -1,5 +1,5 @@
 name: PaperBridge
-version: '1.1-BETA'
+version: '1.1.2'
 main: com.yokito.paperbridge.bootstrap.PaperBridgePlugin
 api-version: '1.21.11'
 dependencies:

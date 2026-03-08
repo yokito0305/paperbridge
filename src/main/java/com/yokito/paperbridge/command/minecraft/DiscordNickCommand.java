@@ -3,7 +3,6 @@ package com.yokito.paperbridge.command.minecraft;
 import com.yokito.paperbridge.service.nickname.NicknameService;
 import net.kyori.adventure.text.Component;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 

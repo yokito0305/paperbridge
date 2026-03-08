@@ -6,7 +6,7 @@
 
     <groupId>com.yokito</groupId>
     <artifactId>PaperBridge</artifactId>
-    <version>1.1-BETA</version>
+    <version>1.1.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -7,14 +7,15 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.yokito.paperbridge.bootstrap.PaperBridgeBootstrap;
+
 /**
- * 保存本專案可用的 Discord slash command 集合與查找表。
+ * 保存本專案可用的 Discord slash command 集合與查找表，由 {@link PaperBridgeBootstrap} 組裝後提供給 command registrar 與 interaction listener 使用。
  *
  * <p>此類別屬於內部命令模型，不直接做任何 Discord API 呼叫；listener 與 registrar
  * 會共用這個 registry 當作命令來源。</p>
  */
 public class DiscordSlashCommandRegistry {
-
     private final List<DiscordSlashCommand> commands;
     private final Map<String, DiscordSlashCommand> commandsByName;
 
