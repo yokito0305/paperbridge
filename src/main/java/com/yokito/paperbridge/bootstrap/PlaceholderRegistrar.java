@@ -6,9 +6,9 @@ import com.yokito.paperbridge.service.nickname.NicknameService;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * 負責 PlaceholderAPI 擴展註冊。
+ * Registers PlaceholderAPI integration when it is available.
  */
-public class PlaceholderRegistrar {
+public class PlaceholderRegistrar implements RuntimeComponent {
 
     private final JavaPlugin plugin;
     private final NicknameService nicknameService;
@@ -18,12 +18,17 @@ public class PlaceholderRegistrar {
         this.nicknameService = nicknameService;
     }
 
-    public void register() {
+    @Override
+    public void start() {
         if (plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") == null) {
             return;
         }
 
         new PaperBridgeExpansion(nicknameService).register();
         plugin.getLogger().info(DiscordText.PLACEHOLDER_ENABLED_LOG);
+    }
+
+    @Override
+    public void stop() {
     }
 }

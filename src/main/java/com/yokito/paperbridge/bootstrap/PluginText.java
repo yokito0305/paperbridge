@@ -1,17 +1,18 @@
 package com.yokito.paperbridge.bootstrap;
 
 /**
- * 集中管理 plugin 啟動流程使用的固定文字。
- *
- * <p>目前只保留 plugin 層級的 log 訊息，避免 {@link PaperBridgePlugin} 內散落字串。</p>
+ * Shared plugin log messages.
  */
 public final class PluginText {
 
-    public static final String COMMAND_NOT_DECLARED_LOG = "plugin.yml 缺少命令定義: ";
+    public static final String COMMAND_NOT_DECLARED_LOG = "plugin.yml command not declared: ";
+    public static final String CUSTOM_BOT_MODE_NOT_IMPLEMENTED_LOG =
+            "discord.yml enables custom bot mode, but this version does not implement it yet. Discord features are disabled.";
+    public static final String DISCORD_SRV_MODE_ENABLED_LOG =
+            "DiscordSRV detected. DiscordSRV integration mode enabled.";
+    public static final String DISCORD_INTEGRATION_SKIPPED_LOG =
+            "Custom bot mode is disabled and DiscordSRV was not detected. Discord integration is skipped.";
 
-    /**
-     * 工具類別不允許被實例化。
-     */
     private PluginText() {
     }
 }

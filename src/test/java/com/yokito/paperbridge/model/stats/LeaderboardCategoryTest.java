@@ -31,10 +31,8 @@ class LeaderboardCategoryTest {
                         Statistic.DEATHS, 7,
                         Statistic.PLAY_ONE_MINUTE, 72_000,
                         Statistic.PLAYER_KILLS, 5,
-                        Statistic.MOB_KILLS, 9
-                ),
-                Map.of(Material.STONE, 12, Material.DIRT, 8)
-        );
+                        Statistic.MOB_KILLS, 9),
+                Map.of(Material.STONE, 12, Material.DIRT, 8));
         StatsFormatter formatter = new StatsFormatter();
 
         assertEquals(7L, LeaderboardCategory.DEATHS.extractRawValue(player));
@@ -46,7 +44,8 @@ class LeaderboardCategoryTest {
         assertEquals(14L, LeaderboardCategory.KILLS.extractRawValue(player));
         assertEquals("14", LeaderboardCategory.KILLS.formatDisplayValue(formatter, 14));
 
-        assertEquals(20L, LeaderboardCategory.MINED.extractRawValue(player));
+        assertEquals(20L,
+                LeaderboardCategory.countMinedBlocks(player, new Material[] { Material.STONE, Material.DIRT }));
         assertEquals("20", LeaderboardCategory.MINED.formatDisplayValue(formatter, 20));
     }
 
@@ -54,11 +53,10 @@ class LeaderboardCategoryTest {
             UUID playerId,
             String playerName,
             Map<Statistic, Integer> statistics,
-            Map<Material, Integer> minedBlocks
-    ) {
+            Map<Material, Integer> minedBlocks) {
         return (OfflinePlayer) Proxy.newProxyInstance(
                 OfflinePlayer.class.getClassLoader(),
-                new Class<?>[]{OfflinePlayer.class},
+                new Class<?>[] { OfflinePlayer.class },
                 (proxy, method, args) -> switch (method.getName()) {
                     case "getUniqueId" -> playerId;
                     case "getName" -> playerName;
@@ -77,7 +75,6 @@ class LeaderboardCategoryTest {
                     case "equals" -> proxy == args[0];
                     case "toString" -> "FakeOfflinePlayer[" + playerName + "]";
                     default -> throw new UnsupportedOperationException(method.getName());
-                }
-        );
+                });
     }
 }

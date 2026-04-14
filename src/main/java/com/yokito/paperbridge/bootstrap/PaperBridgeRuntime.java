@@ -1,20 +1,18 @@
 package com.yokito.paperbridge.bootstrap;
 
 /**
- * 封裝 PaperBridge 啟停所需的副作用流程。
- *
- * <p>所有註冊與解除註冊都集中在這個 runtime 中，讓 plugin 主類別只需要委派 {@code start()} 和 {@code stop()} 方法。</p>
+ * Owns plugin lifecycle components.
  */
 public class PaperBridgeRuntime {
 
-    private final MinecraftCommandRegistrar minecraftCommandRegistrar;
-    private final PlaceholderRegistrar placeholderRegistrar;
-    private final DiscordIntegrationRegistrar discordIntegrationRegistrar;
+    private final RuntimeComponent minecraftCommandRegistrar;
+    private final RuntimeComponent placeholderRegistrar;
+    private final RuntimeComponent discordIntegrationRegistrar;
 
     public PaperBridgeRuntime(
-            MinecraftCommandRegistrar minecraftCommandRegistrar,
-            PlaceholderRegistrar placeholderRegistrar,
-            DiscordIntegrationRegistrar discordIntegrationRegistrar
+            RuntimeComponent minecraftCommandRegistrar,
+            RuntimeComponent placeholderRegistrar,
+            RuntimeComponent discordIntegrationRegistrar
     ) {
         this.minecraftCommandRegistrar = minecraftCommandRegistrar;
         this.placeholderRegistrar = placeholderRegistrar;
@@ -22,12 +20,14 @@ public class PaperBridgeRuntime {
     }
 
     public void start() {
-        minecraftCommandRegistrar.register();
-        placeholderRegistrar.register();
-        discordIntegrationRegistrar.register();
+        minecraftCommandRegistrar.start();
+        placeholderRegistrar.start();
+        discordIntegrationRegistrar.start();
     }
 
     public void stop() {
-        discordIntegrationRegistrar.unregister();
+        discordIntegrationRegistrar.stop();
+        placeholderRegistrar.stop();
+        minecraftCommandRegistrar.stop();
     }
 }

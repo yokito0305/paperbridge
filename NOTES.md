@@ -5,7 +5,7 @@
 
 ## 版本與環境
 
-- 目前版本：`1.1.2`
+- 目前版本：`1.1.3`
 - 平台：Paper `1.21.11+`
 - Java：`21`
 - 可選整合：DiscordSRV、PlaceholderAPI

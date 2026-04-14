@@ -28,7 +28,7 @@ public final class DiscordText {
     public static final String DISTANCE_TRAVELED_FIELD = "移動距離";
     public static final String STATS_FOOTER = "PaperBridge Stats";
     public static final String LEADERBOARD_FOOTER = "PaperBridge Leaderboard";
-    public static final String ONLINE_TITLE = "Minecraft 在線玩家";
+    public static final String ONLINE_TITLE = ":green_circle: Minecraft 在線玩家";
     public static final String ONLINE_DESCRIPTION_PREFIX = "目前共有 **";
     public static final String ONLINE_DESCRIPTION_SUFFIX = "** 位玩家在線。";
     public static final String ONLINE_FOOTER = "PaperBridge Online";

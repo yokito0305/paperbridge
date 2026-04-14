@@ -17,78 +17,84 @@ import com.yokito.paperbridge.service.nickname.NicknameService;
 import com.yokito.paperbridge.service.stats.LeaderboardService;
 import com.yokito.paperbridge.service.stats.PlayerStatsService;
 import com.yokito.paperbridge.service.stats.StatsFormatter;
+import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
 /**
- * 核心組裝器，負責建立 PaperBridge 執行所需的所有主要元件。
- *
- * <p>這裡是專案的 composition root：服務、Discord gateway、command registry、
- * registrar 與 listener 都在這裡串接完成，再回傳可直接啟停的 {@link PaperBridgeRuntime}。</p>
+ * Composition root for plugin services and runtime-managed integrations.
  */
 public class PaperBridgeBootstrap {
 
     private final PaperBridgePlugin plugin;
 
-    /**
-     * 建立綁定到特定 plugin 實例的組裝器。
-     */
     public PaperBridgeBootstrap(PaperBridgePlugin plugin) {
         this.plugin = plugin;
     }
 
-    /**
-     * 依照依賴順序建立核心服務與所有註冊協調器。
-     *
-     * <p>這裡只建立物件圖，不直接觸發任何副作用；副作用由回傳的 runtime 控制。</p>
-     */
     public PaperBridgeRuntime build() {
-
-        // ── 1. 核心服務層 ──────────────────────────────────────────
+        // Initialize services
         StatsFormatter statsFormatter = new StatsFormatter();
         NicknameService nicknameService = new NicknameService(
                 new NicknameRepository(plugin.getConfig(), plugin::saveConfig));
         PlayerStatsService playerStatsService = new PlayerStatsService(statsFormatter);
         LeaderboardService leaderboardService = new LeaderboardService(statsFormatter);
 
-        // ── 2. Discord 基礎設施（Gateway / Resolver / Embed） ─────
+        // Initialize command handlers
+        DiscordNickCommand discordNickCommand = new DiscordNickCommand(nicknameService);
+
+        // Initialize runtime components
+        MinecraftCommandRegistrar minecraftCommandRegistrar =
+                new MinecraftCommandRegistrar(plugin, discordNickCommand);
+        PlaceholderRegistrar placeholderRegistrar =
+                new PlaceholderRegistrar(plugin, nicknameService);
+
+        return new PaperBridgeRuntime(
+                minecraftCommandRegistrar,
+                placeholderRegistrar,
+                createDiscordRuntimeComponent(playerStatsService, leaderboardService)
+        );
+    }
+
+    // 這個方法負責根據配置決定是否啟用 DiscordSRV 插件整合，並創建相應的 RuntimeComponent
+    private RuntimeComponent createDiscordRuntimeComponent(
+            PlayerStatsService playerStatsService,
+            LeaderboardService leaderboardService
+    ) {
+        DiscordModeConfig discordModeConfig = new DiscordModeConfig(plugin.getDiscordConfig());
+        if (discordModeConfig.isCustomBotEnabled()) {
+            plugin.getLogger().warning(PluginText.CUSTOM_BOT_MODE_NOT_IMPLEMENTED_LOG);
+            return NoOpRuntimeComponent.INSTANCE;
+        }
+
+        Plugin discordSrvPlugin = plugin.getServer().getPluginManager().getPlugin("DiscordSRV");
+        if (discordSrvPlugin == null || !discordSrvPlugin.isEnabled()) {
+            plugin.getLogger().info(PluginText.DISCORD_INTEGRATION_SKIPPED_LOG);
+            return NoOpRuntimeComponent.INSTANCE;
+        }
+
+        plugin.getLogger().info(PluginText.DISCORD_SRV_MODE_ENABLED_LOG);
+
         DiscordGateway discordGateway = new DiscordSrvGateway();
-        DiscordLinkedPlayerResolver linkedPlayerResolver =
-                new DiscordLinkedPlayerResolver(discordGateway);
+        DiscordLinkedPlayerResolver linkedPlayerResolver = new DiscordLinkedPlayerResolver(discordGateway);
         DiscordEmbedFactory embedFactory = new DiscordEmbedFactory();
 
-        // ── 3. Discord Slash Command 處理器 ───────────────────────
         DiscordStatsCommandHandler statsCommand =
                 new DiscordStatsCommandHandler(linkedPlayerResolver, playerStatsService, embedFactory);
         DiscordLeaderboardCommandHandler leaderboardCommand =
                 new DiscordLeaderboardCommandHandler(linkedPlayerResolver, leaderboardService, embedFactory);
-        DiscordOnlineCommandHandler onlineCommand =
-                new DiscordOnlineCommandHandler(embedFactory);
+        DiscordOnlineCommandHandler onlineCommand = new DiscordOnlineCommandHandler(embedFactory);
 
-        // ── 4. Command Registry 與 Interaction Listener ──────────
         DiscordSlashCommandRegistry commandRegistry = new DiscordSlashCommandRegistry(
                 List.of(statsCommand, leaderboardCommand, onlineCommand));
         DiscordCommandRegistrar commandRegistrar =
                 new DiscordCommandRegistrar(plugin.getLogger(), commandRegistry);
         DiscordInteractionListener discordInteractionListener = new DiscordInteractionListener(
                 plugin, discordGateway, commandRegistrar, commandRegistry);
-
-        // ── 5. 其餘獨立元件 ───────────────────────────────────────
         DeathMessageProcessor deathMessageProcessor = new DeathMessageProcessor();
-        DiscordNickCommand discordNickCommand = new DiscordNickCommand(nicknameService);
 
-        // ── 6. 組裝三個 Registrar，交由 Runtime 統一管理啟停 ──────
-        MinecraftCommandRegistrar minecraftCommandRegistrar =
-                new MinecraftCommandRegistrar(plugin, discordNickCommand);
-        PlaceholderRegistrar placeholderRegistrar =
-                new PlaceholderRegistrar(plugin, nicknameService);
-        DiscordIntegrationRegistrar discordIntegrationRegistrar = new DiscordIntegrationRegistrar(
-                plugin, discordGateway, deathMessageProcessor, discordInteractionListener);
-
-        return new PaperBridgeRuntime(
-                minecraftCommandRegistrar,
-                placeholderRegistrar,
-                discordIntegrationRegistrar
+        return new DiscordIntegrationRegistrar(
+                plugin, discordGateway, deathMessageProcessor, discordInteractionListener
         );
     }
 }

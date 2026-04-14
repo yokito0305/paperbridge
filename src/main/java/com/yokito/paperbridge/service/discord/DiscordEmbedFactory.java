@@ -41,7 +41,7 @@ public class DiscordEmbedFactory {
      */
     public EmbedBuilder createLeaderboardEmbed(LeaderboardCategory category, List<LeaderboardEntry> leaderboard, int limit) {
         return new EmbedBuilder()
-                .setTitle(category.displayName() + " TOP " + limit)
+                .setTitle(":trophy:" + category.displayName() + " TOP " + limit)
                 .setColor(Color.decode("#F1C40F"))
                 .setFooter(DiscordText.LEADERBOARD_FOOTER, null)
                 .setDescription(formatLeaderboardLines(category, leaderboard))
@@ -85,9 +85,9 @@ public class DiscordEmbedFactory {
      */
     private String getRankBadge(int rank) {
         return switch (rank) {
-            case 1 -> "#1";
-            case 2 -> "#2";
-            case 3 -> "#3";
+            case 1 -> ":first_place:";
+            case 2 -> ":second_place:";
+            case 3 -> ":third_place:";
             default -> "#" + rank;
         };
     }

@@ -7,9 +7,9 @@ import com.yokito.paperbridge.service.discord.DiscordText;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * 負責 DiscordSRV listener 的掛載與解除掛載。
+ * Registers DiscordSRV-backed listeners for this plugin.
  */
-public class DiscordIntegrationRegistrar {
+public class DiscordIntegrationRegistrar implements RuntimeComponent {
 
     private final JavaPlugin plugin;
     private final DiscordGateway discordGateway;
@@ -28,11 +28,8 @@ public class DiscordIntegrationRegistrar {
         this.discordInteractionListener = discordInteractionListener;
     }
 
-    public void register() {
-        if (plugin.getServer().getPluginManager().getPlugin("DiscordSRV") == null) {
-            return;
-        }
-
+    @Override
+    public void start() {
         discordGateway.subscribe(deathMessageProcessor);
         plugin.getLogger().info(DiscordText.DISCORD_DEATH_PROCESSOR_ENABLED_LOG);
 
@@ -40,11 +37,8 @@ public class DiscordIntegrationRegistrar {
         plugin.getLogger().info(DiscordText.DISCORD_INTERACTION_ENABLED_LOG);
     }
 
-    public void unregister() {
-        if (plugin.getServer().getPluginManager().getPlugin("DiscordSRV") == null) {
-            return;
-        }
-
+    @Override
+    public void stop() {
         discordGateway.unsubscribe(deathMessageProcessor);
         discordInteractionListener.shutdown();
         discordGateway.unsubscribe(discordInteractionListener);

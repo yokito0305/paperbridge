@@ -4,17 +4,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NicknameServiceTest {
 
+    // ── getNickname ────────────────────────────────────────────────────
+
     @Test
     void shouldPersistAndReadNickname() {
-        YamlConfiguration configuration = new YamlConfiguration();
-        NicknameRepository repository = new NicknameRepository(configuration, () -> { });
-        NicknameService nicknameService = new NicknameService(repository);
+        NicknameService nicknameService = buildService();
         UUID playerId = UUID.randomUUID();
 
         nicknameService.setNickname(playerId, "Yokito");
@@ -23,10 +23,18 @@ class NicknameServiceTest {
     }
 
     @Test
+    void shouldReturnDefaultWhenNicknameNotSet() {
+        NicknameService nicknameService = buildService();
+        UUID playerId = UUID.randomUUID();
+
+        assertEquals("尚未設定", nicknameService.getNickname(playerId));
+    }
+
+    // ── getDisplayNickname ─────────────────────────────────────────────
+
+    @Test
     void shouldFormatDisplayNickname() {
-        YamlConfiguration configuration = new YamlConfiguration();
-        NicknameRepository repository = new NicknameRepository(configuration, () -> { });
-        NicknameService nicknameService = new NicknameService(repository);
+        NicknameService nicknameService = buildService();
         UUID playerId = UUID.randomUUID();
 
         nicknameService.setNickname(playerId, "Yokito");
@@ -35,11 +43,75 @@ class NicknameServiceTest {
     }
 
     @Test
-    void shouldValidateNicknameLength() {
-        YamlConfiguration configuration = new YamlConfiguration();
-        NicknameRepository repository = new NicknameRepository(configuration, () -> { });
+    void shouldReturnPlayerNameWhenNicknameNotSet() {
+        NicknameService nicknameService = buildService();
+        UUID playerId = UUID.randomUUID();
+
+        assertEquals("Steve", nicknameService.getDisplayNickname(playerId, "Steve"));
+    }
+
+    @Test
+    void shouldReturnPlayerNameWhenNicknameEqualsPlayerName() {
+        NicknameService nicknameService = buildService();
+        UUID playerId = UUID.randomUUID();
+
+        nicknameService.setNickname(playerId, "Steve");
+
+        assertEquals("Steve", nicknameService.getDisplayNickname(playerId, "Steve"));
+    }
+
+    // ── isValidNickname ────────────────────────────────────────────────
+
+    @Test
+    void shouldAcceptNicknameWithinLengthBounds() {
+        NicknameService nicknameService = buildService();
+
+        assertTrue(nicknameService.isValidNickname("a"), "length 1 should be valid");
+        assertTrue(nicknameService.isValidNickname("abc"), "length 3 should be valid");
+        assertTrue(nicknameService.isValidNickname("1234567890"), "length 10 should be valid");
+    }
+
+    @Test
+    void shouldRejectEmptyNickname() {
+        NicknameService nicknameService = buildService();
+
+        assertFalse(nicknameService.isValidNickname(""));
+    }
+
+    @Test
+    void shouldRejectNullNickname() {
+        NicknameService nicknameService = buildService();
+
+        assertFalse(nicknameService.isValidNickname(null));
+    }
+
+    @Test
+    void shouldRejectNicknameThatExceedsMaxLength() {
+        NicknameService nicknameService = buildService();
+
+        assertFalse(nicknameService.isValidNickname("12345678901")); // length 11
+    }
+
+    // ── saveAction ─────────────────────────────────────────────────────
+
+    @Test
+    void shouldInvokeSaveActionOnSetNickname() {
+        AtomicInteger saveCount = new AtomicInteger();
+        NicknameRepository repository = new NicknameRepository(
+                new YamlConfiguration(), saveCount::incrementAndGet);
         NicknameService nicknameService = new NicknameService(repository);
 
-        assertTrue(nicknameService.isValidNickname("abc"));
+        nicknameService.setNickname(UUID.randomUUID(), "Yokito");
+
+        assertEquals(1, saveCount.get());
+    }
+
+    // ── helpers ────────────────────────────────────────────────────────
+
+    private static NicknameService buildService() {
+        NicknameRepository repository = new NicknameRepository(
+                new YamlConfiguration(), () -> {
+                });
+        return new NicknameService(repository);
     }
 }
