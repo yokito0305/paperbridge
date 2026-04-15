@@ -81,5 +81,9 @@ class DiscordLinkedPlayerResolverTest {
         public Set<UUID> getLinkedPlayerIds() {
             return linkedPlayerIds;
         }
+
+        @Override
+        public void syncMemberNickname(String discordUserId, String displayNickname) {
+        }
     }
 }

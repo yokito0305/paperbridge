@@ -1,8 +1,8 @@
 package com.yokito.paperbridge.bootstrap;
 
-import com.yokito.paperbridge.command.discord.DiscordCommandRegistrar;
 import com.yokito.paperbridge.command.discord.DiscordLeaderboardCommandHandler;
 import com.yokito.paperbridge.command.discord.DiscordOnlineCommandHandler;
+import com.yokito.paperbridge.command.discord.DiscordSetNickCommandHandler;
 import com.yokito.paperbridge.command.discord.DiscordSlashCommandRegistry;
 import com.yokito.paperbridge.command.discord.DiscordStatsCommandHandler;
 import com.yokito.paperbridge.command.minecraft.DiscordNickCommand;
@@ -52,14 +52,15 @@ public class PaperBridgeBootstrap {
         return new PaperBridgeRuntime(
                 minecraftCommandRegistrar,
                 placeholderRegistrar,
-                createDiscordRuntimeComponent(playerStatsService, leaderboardService)
+                createDiscordRuntimeComponent(playerStatsService, leaderboardService, nicknameService)
         );
     }
 
     // 這個方法負責根據配置決定是否啟用 DiscordSRV 插件整合，並創建相應的 RuntimeComponent
     private RuntimeComponent createDiscordRuntimeComponent(
             PlayerStatsService playerStatsService,
-            LeaderboardService leaderboardService
+            LeaderboardService leaderboardService,
+            NicknameService nicknameService
     ) {
         DiscordModeConfig discordModeConfig = new DiscordModeConfig(plugin.getDiscordConfig());
         if (discordModeConfig.isCustomBotEnabled()) {
@@ -85,12 +86,13 @@ public class PaperBridgeBootstrap {
                 new DiscordLeaderboardCommandHandler(linkedPlayerResolver, leaderboardService, embedFactory);
         DiscordOnlineCommandHandler onlineCommand = new DiscordOnlineCommandHandler(embedFactory);
 
+        DiscordSetNickCommandHandler setNickCommand =
+                new DiscordSetNickCommandHandler(linkedPlayerResolver, nicknameService, discordGateway);
+
         DiscordSlashCommandRegistry commandRegistry = new DiscordSlashCommandRegistry(
-                List.of(statsCommand, leaderboardCommand, onlineCommand));
-        DiscordCommandRegistrar commandRegistrar =
-                new DiscordCommandRegistrar(plugin.getLogger(), commandRegistry);
+                List.of(statsCommand, leaderboardCommand, onlineCommand, setNickCommand));
         DiscordInteractionListener discordInteractionListener = new DiscordInteractionListener(
-                plugin, discordGateway, commandRegistrar, commandRegistry);
+                plugin, discordGateway, commandRegistry);
         DeathMessageProcessor deathMessageProcessor = new DeathMessageProcessor();
 
         return new DiscordIntegrationRegistrar(

@@ -37,6 +37,14 @@ public interface DiscordGateway {
     UUID getLinkedPlayerId(String discordUserId);
 
     /**
+     * 更新指定 Discord 使用者在所有 Guild 中的伺服器暱稱。
+     *
+     * <p>操作為非同步（fire-and-forget）；失敗時由實作層記錄警告，
+     * 不影響呼叫端的主流程。</p>
+     */
+    void syncMemberNickname(String discordUserId, String displayNickname);
+
+    /**
      * 取得目前所有已綁定的 Minecraft 玩家 UUID。
      */
     Set<UUID> getLinkedPlayerIds();

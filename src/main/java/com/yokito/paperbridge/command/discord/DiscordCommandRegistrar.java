@@ -11,10 +11,12 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * 將本專案管理的 slash commands 註冊到 Discord guild。
+ * 將本專案管理的 slash commands 註冊到 Discord guild，目前保留實作用於 custom bot 註冊。
  *
- * <p>此類別只處理外部平台註冊，不負責命令查找；命令集合的來源由
- * {@link DiscordSlashCommandRegistry} 提供。</p>
+ * <p>
+ * 此類別只處理外部平台註冊，不負責命令查找；命令集合的來源由
+ * {@link DiscordSlashCommandRegistry} 提供。
+ * </p>
  */
 public class DiscordCommandRegistrar {
 
@@ -34,7 +36,9 @@ public class DiscordCommandRegistrar {
     /**
      * 重新發布目前由本專案管理的 slash commands。
      *
-     * <p>流程會先清除同名舊全域指令，再逐個 guild upsert 最新 definition。</p>
+     * <p>
+     * 流程會先清除同名舊全域指令，再逐個 guild upsert 最新 definition。
+     * </p>
      */
     public void registerCommands(JDA jda) {
         deleteLegacyGlobalCommands(jda);
@@ -58,8 +62,7 @@ public class DiscordCommandRegistrar {
                 commands -> commands.stream()
                         .filter(command -> managedCommandNames.contains(command.getName()))
                         .forEach(this::deleteGlobalCommand),
-                err -> logger.warning(DiscordText.LEGACY_COMMAND_DELETE_FAILURE_LOG + err.getMessage())
-        );
+                err -> logger.warning(DiscordText.LEGACY_COMMAND_DELETE_FAILURE_LOG + err.getMessage()));
     }
 
     /**
@@ -69,9 +72,7 @@ public class DiscordCommandRegistrar {
         command.delete().queue(
                 ignored -> logger.info(DiscordText.GLOBAL_COMMAND_DELETE_SUCCESS_LOG + command.getName()),
                 err -> logger.warning(
-                        DiscordText.GLOBAL_COMMAND_DELETE_FAILURE_LOG + command.getName() + "): " + err.getMessage()
-                )
-        );
+                        DiscordText.GLOBAL_COMMAND_DELETE_FAILURE_LOG + command.getName() + "): " + err.getMessage()));
     }
 
     /**
@@ -83,7 +84,6 @@ public class DiscordCommandRegistrar {
                 cmd -> logger.info(DiscordText.GUILD_COMMAND_REGISTER_SUCCESS_LOG + cmd.getName()
                         + " (Guild: " + guild.getName() + ", ID: " + cmd.getId() + ")"),
                 err -> logger.warning(DiscordText.GUILD_COMMAND_REGISTER_FAILURE_LOG
-                        + guild.getName() + ", Command: /" + commandData.getName() + "): " + err.getMessage())
-        );
+                        + guild.getName() + ", Command: /" + commandData.getName() + "): " + err.getMessage()));
     }
 }
