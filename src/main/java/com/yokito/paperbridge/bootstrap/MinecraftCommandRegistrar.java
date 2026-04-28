@@ -1,5 +1,7 @@
 package com.yokito.paperbridge.bootstrap;
 
+import javax.annotation.Nonnull;
+
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
@@ -28,7 +30,7 @@ public class MinecraftCommandRegistrar implements RuntimeComponent {
     public void stop() {
     }
 
-    private void bindCommand(String commandName, CommandExecutor executor) {
+    private void bindCommand(@Nonnull String commandName, CommandExecutor executor) {
         PluginCommand command = plugin.getCommand(commandName);
         if (command == null) {
             plugin.getLogger().severe(PluginText.COMMAND_NOT_DECLARED_LOG + commandName);
